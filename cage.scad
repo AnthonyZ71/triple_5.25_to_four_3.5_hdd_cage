@@ -391,7 +391,7 @@ module fan_shroud() {
     translate([0, 0, shroud_h/2]) {
         difference() {
             cube([cage_w, cage_h, shroud_h], center=true);
-            cube([119, 119, shroud_h + 10], center=true);
+            cube([119.99, 119.99, shroud_h + 10], center=true);
             translate([0, 0, fan_grill_cover_height + 2])
             cube([cage_w - outer_wall, 120, shroud_h], center=true);
             
