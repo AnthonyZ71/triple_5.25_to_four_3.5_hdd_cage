@@ -41,6 +41,9 @@ OPENSCAD=openscad
 OPENSCAD_OPTIONS=-DVERBOSE=false
 IMAGE_OPTIONS=--imgsize=1024,768 --colorscheme=Solarized
 
+SLICER=prusaslicer
+SLICER_OPTIONS=--printer-technology FFF --center 100,100 -g --loglevel 0
+
 # ----- Everything after this should not need modification --------------------
 
 check_defined = $(strip $(foreach 1,$1, $(call __check_defined,$1,$(strip $(value 2)))))
@@ -56,9 +59,11 @@ SOURCES=$(shell $(DEPEND) $(PREFIX).scad)
 
 STL=stl
 IMAGE=png
+GCODE=gcode
 
 MODELS=$(patsubst %,$(STL)/$(PREFIX)-%.$(STL),$(PARTS))
 IMAGES=$(patsubst %,$(IMAGE)/$(PREFIX)-%.$(IMAGE),$(PARTS))
+GCODES=$(patsubst %,$(GCODE)/$(PREFIX)-%.$(GCODE),$(PARTS))
 ALLIN1=$(PREFIX)-all.scad
 
 FAN_COVERS=crosshair crosshex grid none teardrop
@@ -66,24 +71,26 @@ SHROUD_MODELS=$(patsubst %,$(STL)/$(PREFIX)-fan_shroud-%.$(STL),$(FAN_COVERS))
 SHROUD_IMAGES=$(patsubst %,$(IMAGE)/$(PREFIX)-fan_shroud-%.$(IMAGE),$(FAN_COVERS))
 
 
-all:	models images shroud_models shroud_images $(ALLIN1)
+all:	models images gcodes shroud_models shroud_images $(ALLIN1)
 
 directories:
-	mkdir -p $(STL) $(IMAGE)
+	mkdir -p $(STL) $(IMAGE) $(GCODE)
 
 models: directories $(MODELS)
 
 images: directories $(IMAGES)
+
+gcodes: directories $(GCODES)
 
 shroud_models: directories $(SHROUD_MODELS) 
 
 shroud_images: directories $(SHROUD_IMAGES) 
 
 clean:
-	rm -f $(STL)/$(PREFIX)-* $(IMAGE)/$(PREFIX)-* $(ALLIN1)
+	rm -f $(STL)/$(PREFIX)-* $(IMAGE)/$(PREFIX)-* $(GCODE)/$(PREFIX)-* $(ALLIN1)
 
 cleanall:
-	rm -rf $(STL) $(IMAGE) $(ALLIN1)
+	rm -rf $(STL) $(IMAGE) $(GCODE) $(ALLIN1)
 
 $(SHROUD_MODELS) : $(STL)/$(PREFIX)-fan_shroud-%.$(STL) : $(SOURCES)
 	$(OPENSCAD) $(OPENSCAD_OPTIONS) -o $@ -DPART=\"fan_shroud\" -Dgrill_style=\"$(subst $(PREFIX)-fan_shroud-,fan_cover_,$(subst .$(STL),.$(STL),$(@F)))\" $<
@@ -100,6 +107,11 @@ $(MODELS) : $(STL)/$(PREFIX)-%.$(STL) : $(SOURCES)
 
 $(IMAGES) : $(IMAGE)/$(PREFIX)-%.$(IMAGE) : $(SOURCES)
 	$(OPENSCAD) $(OPENSCAD_OPTIONS) -o $@ -DPART=\"$(subst $(PREFIX)-,,$(subst .$(IMAGE),,$(@F)))\" $(IMAGE_OPTIONS) $<
+
+# Dependencies for gcodes
+
+$(GCODES) : $(GCODE)/$(PREFIX)-%.$(GCODE) : $(STL)/$(PREFIX)-%.$(STL) slicer-%.ini
+	$(SLICER) $(SLICER_OPTIONS) --load slicer-$(subst $(PREFIX)-,,$(subst .$(GCODE),,$(@F))).ini -o $@ $<
 
 # Dependencies for all-in-1
 $(ALLIN1) : $(SOURCES)
