@@ -171,7 +171,7 @@ module cage() {
             rail_spacing();
         // cut out center stuff
         translate([cage_w/2, cage_l/2, cage_h/2])
-            cube([cage_w * .75, cage_l * 2, hdd_w], center=true);
+            cube([hdd_h * 4 + spacing_w*7, cage_l * 2, hdd_w], center=true);
         // cut out the hdd vertical spacing
         translate([spacing_w, 0, 0])
             caged_hdds();
@@ -229,7 +229,7 @@ module pin(pin_diameter, pin_length) {
 }
 
 module clip(height, length, width) {
-    angle = 20;
+    angle = 16;
 
     translate([-width/2, 0, -height]) {
         difference() {
@@ -256,14 +256,14 @@ module handle(length, width, height, rail_height, positive=true) {
     s3_z = (s1_l / 2) * tan(s2_angle);
     extension = s2_angle / 90 * height;
 
-    clip_h = 2;
+    clip_h = 1.5;
     clip_l = 6;
     clip_w = width / 3;
 
     if (positive == true) {
         translate([-width/2, s1_l, 0])
             cube([width, s1_l, height]);
-        translate([0, s1_l + .5, 0.01])
+        translate([0, s1_l + 1, 0.01])
             clip(clip_h, clip_l, clip_w);
         translate([width/2, s1_l, 0])
             rotate([s2_angle, 0, 180])
@@ -271,11 +271,11 @@ module handle(length, width, height, rail_height, positive=true) {
         translate([-width/2, 0, s3_z])
             cube([width, s3_l + extension, height]);
         translate([-width/2, 0, s3_z - 2 + height])
-            cube([width, height, 2]);
+            cube([width, 1, height]);
     } else {
         trim = width/2+tolerance*2;
         translate([-clip_w/2, s1_l + .4, -9])
-            cube([clip_w + .2, clip_l/2 + .2, 10]);
+            cube([clip_w + .4, clip_l/2 + .4, 10]);
         translate([-width/2, 0, 0])
             difference() {
                 cube([width, length + 8, rail_height]);
@@ -332,7 +332,7 @@ module rail(positive=true) {
                 pin(pin_d, pin_len);
         }
     }
-    handle(main_rail_offset, bottom_width, 1, total_height, positive);
+    handle(main_rail_offset, bottom_width, 1.5, total_height, positive);
 }
 
 module hinge(widthX, depthY, heightZ) {
