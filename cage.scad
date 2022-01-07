@@ -1,5 +1,7 @@
 
-PART = "test"; // ["cage", "rail", "fan_shroud", "test"]
+use <snap-pins.scad>;
+
+PART = "test"; // ["cage", "rail", "fan_shroud", "fan_mounting_pin", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -10,9 +12,6 @@ shroud_h = 26;
 
 // How much tolerance to add to the prints.  This primarily impacts the rail channels, but also has some other impacts such as the pins on the rail that plug into the hard drive.
 tolerance = .2;
-
-// How much bigger the socket should be than the ball in the hinge.  Need enough tolerance that the ball/socket move freely, but not so much that the ball won't lock into the socket.
-hinge_tolerance = 0.5;
 
 bay_h = 41.3 + tolerance;
 bay_w = 146.1 + tolerance;
@@ -55,16 +54,28 @@ hdd_h = hdd_a1 + tolerance;
 hdd_w = hdd_a3 + tolerance;
 hdd_l = hdd_a2 + tolerance;
 
-cage_h = 127 + 0;
-cage_w = 147 + 0; // 146;
+cage_h = 125.75 + 0;
+cage_w = 145 + 0; // 146;
 cage_l = cd_a10 + cd_a11 + 10; // 25.4 * 5;
 total_rail_height = 8 + 0;
 
 spacing_w = 4 + 0;
 
-// How thick the hinges are.
-hinge_t = 4 + 0;
-hinge_l = cage_h/6;
+// pin connector settings.
+snap_pin_pointed = 1;
+snap_pin_fins = 1;
+snap_pin_preload = 0.2;
+snap_pin_clearance = 0.2;
+snap_pin_printable = 1;
+snap_pin_shadow_socket = 1;
+snap_pin_spacing = 20;
+snap_pin_cylinder_thickness = 2;
+
+snap_pin_length = 6;
+snap_pin_diameter = 3.2;
+snap_pin_snap = 0.4;
+snap_pin_snapDepth = 1.2;
+snap_pin_thickness = 1.0;
 
 $fn=$preview ? 18 : 120;
 
@@ -108,45 +119,40 @@ module rail_spacing() {
             cube([rail, cage_l*2, rail], center=true);
 }
 
+module fan_mounting_sockets() {
+    center_w = cage_w/2;
+    center_h = cage_h/2;
+    corner_w = cage_w/2 - 4;
+    corner_h = cage_h/2 - 8;
+    snap_pin_radius = snap_pin_diameter / 2;
+    cylinder_r = snap_pin_radius + snap_pin_snap + snap_pin_cylinder_thickness;
+    cylnder_h = snap_pin_length + snap_pin_cylinder_thickness;
+    for(w = [-1 : 2 : 1]) {
+        x = center_w + corner_w * w;
+        for (h = [-1 : 2 : 1]) {
+            z = center_h + corner_h * h;
+            translate([x, 0, z])
+                rotate([-90, 0, 0])
+                    showSocket(radius = snap_pin_radius,
+                                length = snap_pin_length,
+                                snapDepth = snap_pin_snapDepth,
+                                snap = snap_pin_snap,
+                                thickness = snap_pin_thickness,
+                                pointed = snap_pin_pointed,
+                                fixed = 0,
+                                fins = false,
+                                printable = false,
+                                cylinderRadius = cylinder_r,
+                                cylinderHeight = cylnder_h);
+        }
+    }
+}
+
 module cage() {
     cut = 7;
     difference() {
         // main area
-        union () {
-            cube([cage_w, cage_l, cage_h]);
-            if (include_fan_mount) {
-                middle = cage_h/2;
-                offset = hinge_l*2;
-                translate([hinge_t/2, 0.01, middle + offset])
-                    rotate([0, 90, -90])
-                        hinge_socket(hinge_l, hinge_t, hinge_t, 1);
-                translate([hinge_t/2, 0.01, middle])
-                    rotate([0, 90, -90])
-                        hinge_socket(hinge_l, hinge_t, hinge_t, 3);
-                translate([hinge_t/2, 0.01, middle - offset])
-                    rotate([0, 90, -90])
-                        hinge_socket(hinge_l, hinge_t, hinge_t, 2);
-
-                translate([cage_w - hinge_t/2, 0.01, cage_h/2])
-                    rotate([0, 90, -90])
-                        hinge_socket(cage_h, hinge_t, hinge_t, 0);
-                translate([cage_w/2, 0.01, hinge_t/2])
-                    rotate([0, 90, 0])
-                    rotate([0, 90, -90])
-                        hinge_socket(cage_w, hinge_t, hinge_t, 0);
-                translate([cage_w/2, 0.01, cage_h - hinge_t/2])
-                    rotate([0, 90, 0])
-                    rotate([0, 90, -90])
-                        hinge_socket(cage_w, hinge_t, hinge_t, 0);
-
-                translate([hinge_t/2, 0.01, middle + offset + cage_h/12 + hinge_t])
-                    rotate([0, 90, -90])
-                        hinge_socket(cage_h/12 + 2, hinge_t, hinge_t, 0);
-                translate([hinge_t/2, 0.01, middle - offset - cage_h/12 - hinge_t])
-                    rotate([0, 90, -90])
-                        hinge_socket(cage_h/12 + 2, hinge_t, hinge_t, 0);
-            }
-        }
+        cube([cage_w, cage_l, cage_h]);
         // cut off harsh corners
         translate([0, cut, 0])
             rotate([0, 45, 0])
@@ -160,6 +166,10 @@ module cage() {
         translate([cage_w, cut, cage_h])
             rotate([0, 45, 0])
                 cube([cut, cage_l*2, cut], center=true);
+        // cut out socket for mounting pin for fan
+        if (include_fan_mount) {
+            fan_mounting_sockets();
+        }
         // cut out space for bay rails
         translate([cage_w, 0, cage_h*1/3 + 1.5])
             rail_spacing();
@@ -335,57 +345,9 @@ module rail(positive=true) {
     handle(main_rail_offset, bottom_width, 1.5, total_height, positive);
 }
 
-module hinge(widthX, depthY, heightZ) {
-    top_arch = depthY / 2;
-    bottom_square = heightZ - top_arch;
-    translate([0, 0, heightZ / 2])
-        rotate([0, -90, 0])
-            linear_extrude(widthX, center=true) {
-                translate([(heightZ - depthY)/2, 0, 0]) circle(d=depthY);
-                translate([(-heightZ + bottom_square)/2, 0, 0])
-                square([bottom_square, depthY], center = true);
-            }
-}
-
-// balls = 1 just left side
-// balls = 2 just right side
-// balls = 3 both sides
-module hinge_ball(widthX, depthY, heightZ, balls = 3) {
-    ball_diameter = depthY - .25;
-
-    hinge(widthX, depthY, heightZ);
-    if ((balls == 1) || (balls == 3)) {
-        translate([widthX/2 - depthY/5, 0, heightZ - ball_diameter / 2])
-            sphere(d=ball_diameter);
-    }
-    if ((balls == 2) || (balls == 3)) {
-        translate([-(widthX/2 - depthY/5), 0, heightZ - ball_diameter / 2])
-            sphere(d=ball_diameter);
-    }
-}
-
-// sockets = 1 just left side
-// sockets = 2 just right side
-// sockets = 3 both sides
-module hinge_socket(widthX, depthY, heightZ, sockets = 3) {
-    socket_diameter = depthY - .5 + hinge_tolerance;
-    
-    difference() {
-        hinge(widthX, depthY, heightZ);
-        if ((sockets == 1) || (sockets == 3)) {
-            translate([widthX/2 + depthY/5, 0, heightZ - socket_diameter / 2])
-                sphere(d=socket_diameter);
-        }
-        if ((sockets == 2) || (sockets == 3)) {
-            translate([-(widthX/2 + depthY/5), 0, heightZ - socket_diameter / 2])
-                sphere(d=socket_diameter);
-        }
-    }
-}
-
 module fan_shroud() {
-    shroud_t = hinge_t;
-    outer_wall = cage_h - 119;
+    shroud_t = 4;
+    outer_wall = cage_h - 110;
 
     import(grill_style);
     translate([0, 0, shroud_h/2]) {
@@ -394,18 +356,22 @@ module fan_shroud() {
             cube([119.99, 119.99, shroud_h + 10], center=true);
             translate([0, 0, fan_grill_cover_height + 2])
             cube([cage_w - outer_wall, 120, shroud_h], center=true);
-            
+            translate([-cage_w/2, -cage_h/2, shroud_h/2]) rotate([-90, 0, 0]) fan_mounting_sockets();
         }
+    }
+}
 
-        hinge_x = -cage_w/2 + hinge_t/2;
-        hinge_l = cage_h/6 - hinge_tolerance;
-        translate([hinge_x, cage_h / 6, shroud_h/2 - 0.05])
-            rotate([0, 0, 90])
-                hinge_ball(hinge_l, shroud_t, shroud_t);
-        translate([hinge_x, -cage_h / 6, shroud_h/2 - 0.05])
-            rotate([0, 0, 90])
-                hinge_ball(hinge_l, shroud_t, shroud_t);
-        }
+module fan_mounting_pin() {
+    showPin(radius = snap_pin_diameter/2,
+            length = snap_pin_length,
+            snapDepth = snap_pin_snapDepth,
+            snap = snap_pin_snap,
+            thickness = snap_pin_thickness,
+            clearance = snap_pin_clearance,
+            preload = snap_pin_preload,
+            pointed = snap_pin_pointed,
+            printable = snap_pin_printable,
+            shadowSocket = snap_pin_shadow_socket);
 }
 
 if (PART == "cage") {
@@ -418,6 +384,8 @@ if (PART == "cage") {
             rail();
 } else if (PART == "fan_shroud") {
     fan_shroud();
+} else if (PART == "fan_mounting_pin") {
+    fan_mounting_pin();
 } else if (PART == "test") {
     translate([-cage_w/2 + 10, 0, cage_l]) {
         difference() {
@@ -459,6 +427,9 @@ if (PART == "cage") {
             rail();
         }
     }
+    translate([40, 25, 0]) {
+        fan_mounting_pin();
+    }
 } else {
     translate([0, 0, 30])
         handle(15.525, 15, 1.5, total_rail_height, true);
@@ -466,9 +437,9 @@ if (PART == "cage") {
         translate([-total_rail_height, 0, 0])
             handle(15.525, 15, 1.5, total_rail_height, false);
 
-    translate([cage_w/2 + 20, -hinge_t*2 - 26, cage_h/2])
-        rotate([-90, 0, 0])
-            fan_shroud();
+//    translate([cage_w/2 + 20, -4*2 - 26, cage_h/2])
+//        rotate([-90, 0, 0])
+//            fan_shroud();
     translate([20, 0, 0])
         cage();
     translate([0, 0, total_rail_height*3/4])
@@ -477,5 +448,5 @@ if (PART == "cage") {
     translate([-20, 0, hdd_a5 + (.1380 * 25.4)/2])
         rotate([0, 90, 0])
             rail(false);
-}
 
+}
