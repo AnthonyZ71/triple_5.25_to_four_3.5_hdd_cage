@@ -24,6 +24,12 @@ The rest of the rail should not require support.
 
 # References
 
+Several other projects aided in the creation on this HDD cage.
+
+## Modified Parametric Pin Connectors
+This project makes use of [Modified Parametric Pin Connectors](https://www.thingiverse.com/thing:3218332) by [acwest](https://www.thingiverse.com/acwest/designs) on thingiverse.  After testing other fan mounting mechanisms, I liked using this pin and socket mechanism, primarily because even if I end up accidentally breaking a pin, printing out a new part is minutes, not hours.
+
+## Customizable Fan Grill Covers
 This project makes use of [Customizable Fan Grill Covers](https://www.thingiverse.com/thing:4837562) by [OutwardB](https://www.thingiverse.com/OutwardB) on thingiverse.
 
 Several preset grills are provided using these settings:
