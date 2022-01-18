@@ -20,9 +20,9 @@ Note that the cage has a cylinder channel cut out at the top and bottom on one s
 The channel is for routing the power cable of the fan to the back of the case.
 It should be on the left side of the cage when it is inserted into the case.
 
-- Code: (Github Repository)[https://github.com/AnthonyZ71/triple_5.25_to_four_3.5_hdd_cage)
+- Code: [Github Repository](https://github.com/AnthonyZ71/triple_5.25_to_four_3.5_hdd_cage)
 - STLs:
-  - (Prusa Printers)[https://www.prusaprinters.org/prints/120546-triple-525-bay-to-four-35-hard-drives-cage]
+  - [Prusa Printers](https://www.prusaprinters.org/prints/120546-triple-525-bay-to-four-35-hard-drives-cage)
 
 # Printing Notes
 All parts except the rail are designed to be printed without supports.
