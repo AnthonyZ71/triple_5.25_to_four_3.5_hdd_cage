@@ -9,6 +9,7 @@ include_fan_mount = true;
 
 fan_grill_cover_height = 2;
 shroud_h = 26;
+shroud_inset = 11;
 
 // How much tolerance to add to the prints.  This primarily impacts the rail channels, but also has some other impacts such as the pins on the rail that plug into the hard drive.
 tolerance = .2;
@@ -56,8 +57,11 @@ hdd_l = hdd_a2 + tolerance;
 
 cage_h = 125.75 + 0;
 cage_w = 145 + 0; // 146;
-cage_l = cd_a10 + cd_a11 + 10; // 25.4 * 5;
+cage_l = hdd_a2 - hdd_a7 + 20; //cd_a10 + cd_a11 + 10;
 total_rail_height = 8 + 0;
+
+echo("old", cd_a10 + cd_a11 + 10);
+echo("new", hdd_a2 - hdd_a7 + 20);
 
 spacing_w = 4 + 0;
 
@@ -190,7 +194,7 @@ module cage() {
         for(drive = [0 : 1 : 2]) {
             drive_offset = drive * (cd_a2 + .5);
             for(set = [0 : 1 : 1]) {
-                set_offset = cd_a10 + cd_a11 * set;
+                set_offset = cage_l - shroud_inset - (cd_a11 * set); // cd_a10 + cd_a11 * set;
                 for(mount = [0 : 1 : 1]) {
                     mount_offset = mount ? cd_a13 : cd_a14;
                     translate([-10, set_offset, drive_offset + mount_offset]) {
@@ -355,9 +359,53 @@ module fan_shroud() {
             cube([cage_w, cage_h, shroud_h], center=true);
             cube([119.99, 119.99, shroud_h + 10], center=true);
             translate([0, 0, fan_grill_cover_height + 2])
-            cube([cage_w - outer_wall, 120, shroud_h], center=true);
-            translate([-cage_w/2, -cage_h/2, shroud_h/2]) rotate([-90, 0, 0]) fan_mounting_sockets();
+                cube([cage_w - outer_wall, 120, shroud_h], center=true);
+            translate([-cage_w/2, -cage_h/2, shroud_h/2])
+                rotate([-90, 0, 0])
+                    fan_mounting_sockets();
+
+            // Cut out finger grips to pull the shroud off
+//            translate([-cage_w/2 - 0.01, 0, -shroud_h/2 + 2])
+//                fan_shroud_grip();
+//            translate([cage_w/2 + 0.01, 0, -shroud_h/2 + 2])
+//                rotate([0, 0, 180])
+//                    fan_shroud_grip();
+
+            // Cut out space for the bay rails
+            rail_spacing_z = cage_l - shroud_h/2 + shroud_inset - 2;
+            translate([cage_w/2, cage_h/6 - 1.5, rail_spacing_z])
+                rotate([90, 0, 0])
+                    rail_spacing();
+            translate([cage_w/2, -cage_h/6 - 1.5, rail_spacing_z])
+                rotate([90, 0, 0])
+                    rail_spacing();
+            translate([-cage_w/2, cage_h/6 - 1.5, rail_spacing_z])
+                rotate([90, 0, 0])
+                    rail_spacing();
+            translate([-cage_w/2, -cage_h/6 - 1.5, rail_spacing_z])
+                rotate([90, 0, 0])
+                    rail_spacing();
+
+            // cut off harsh corners
+            cut=7;
+            translate([cage_w/2, cage_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+            translate([cage_w/2, -cage_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+            translate([-cage_w/2, cage_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+            translate([-cage_w/2, -cage_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+
         }
+        translate([-cage_w/2 + .1, 0, -shroud_h/2 + 2])
+            fan_shroud_texture(2);
+        translate([cage_w/2 - .1, 0, -shroud_h/2 + 2])
+            fan_shroud_texture(1.75);
     }
 }
 
@@ -372,6 +420,45 @@ module fan_mounting_pin() {
             pointed = snap_pin_pointed,
             printable = snap_pin_printable,
             shadowSocket = snap_pin_shadow_socket);
+}
+
+module ridge_line(diameter, length) {
+    end_offset = (length - diameter) / 2;
+    rotate([90, 0, 0]) {
+        translate([0, 0, end_offset]) sphere(d = diameter);
+        cylinder(h = length - diameter, d = diameter, center=true);
+        translate([0, 0, -end_offset]) sphere(d = diameter);
+    }
+}
+
+// https://www.dummies.com/article/academics-the-arts/math/calculus/how-to-graph-an-ellipse-190940
+module fan_shroud_texture(diameter) {
+    a = 25.4;
+    b = a / 2;
+    a2 = a * a;
+    b2 = b * b;
+    // x^2 / a^2 + y^2 / b^2 = 1
+    for(y = [0 : b/5 : b - .1]) {
+        x = sqrt((1 - (y * y) / b2) * a2);
+        echo ("y = ", y, "  ;  x = ", x);
+        translate([0, 0, y]) ridge_line(diameter, x);
+    }
+}
+
+module fan_shroud_grip() {
+    grip_w = 25.4;
+    grip_d = 4;
+    x_scale = grip_d / 25.4;
+    z_scale = (grip_w * 1.5) / grip_w;
+
+    scale([x_scale, 1, z_scale]) {
+        difference() {
+            sphere(d=grip_w);
+            translate([0, 0, -grip_w/2]) cube(grip_w, center=true);
+            translate([-grip_w/2, 0, 0]) cube(grip_w, center=true);
+        }
+    }
+
 }
 
 if (PART == "cage") {
@@ -437,9 +524,9 @@ if (PART == "cage") {
         translate([-total_rail_height, 0, 0])
             handle(15.525, 15, 1.5, total_rail_height, false);
 
-//    translate([cage_w/2 + 20, -4*2 - 26, cage_h/2])
-//        rotate([-90, 0, 0])
-//            fan_shroud();
+    translate([cage_w/2 + 20, -4*2 - 20, cage_h/2])
+        rotate([-90, 0, 0])
+            fan_shroud();
     translate([20, 0, 0])
         cage();
     translate([0, 0, total_rail_height*3/4])
