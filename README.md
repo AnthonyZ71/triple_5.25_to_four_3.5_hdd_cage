@@ -3,10 +3,27 @@ OpenSCAD project to create a cage that fits in 3 5.25" drive bays and holds 4 3.
 
 Optionally supports a fan shroud to provide additional airflow to the drives.
 
+You need to print:
+
+- 1 cage-cage.stl
+- 8 cage-rail.stl
+- [optional] 4 cage-fan_mounting_pin.stl
+- [optional] 1 of the cage-fan_shroud stl files.
+
+Note:  Monitor the print closely when printing the fan mounting pins.
+They are very small and can detach from the bed fairly easily.
+
+Pictures are of the cage-fan_shroud_web.stl
+
+Note that the cage has a cylinder channel cut out at the top and bottom on one side.
+This channel can be either on the left side or the right side depending on how the cage is mounted in the case.
+The purpose of the channel is to provide a way to route the power cable of the fan to the back of the case.
+Depending on how you need to route your power cable, make sure this channel is on the side of the case that you want to use for the power cable for the fan.
+
 # Printing Notes
 All parts except the rail are designed to be printed without supports.
 
-I typically print all parts except the rail with typical settings for the material in which they are being printed.
+I print all parts except the rail with typical settings for the material in which they are being printed.
 - 5% infill is sufficient
 
 For the rail:
@@ -21,6 +38,15 @@ The rest of the rail should not require support.
 
 Note that the number of perimeters is increased from 2 to 3 to ensure that the pin of the rail is solid.
 Check the result of slicing the rail, you only need enough perimeters to ensure a solid pin.
+
+## Optional test print
+The cage-test.stl doesn't need to be printed at all unless you want to test the tolerances with your printer before committing to a full print.
+The components of the test print are all oriented as they would be printed individually, and allows validation of size / spacing of the print before committing the time to print all of the components.
+The parts of the test print are:
+- A single full channel and rail to allow validation that the rail slides easily and locks into the cage.
+- A single fan shroud mounting pin to ensure that it will connect the front of the case to the fan shroud
+- A slice of the cage to validate that it will slide into the bay openings for your computer
+- A small portion of the fan shroud to ensure that the mounting pin will connect the shroud to the front of the cage.  (note that it is ok that the pin spins in the mounting holes.  Once all four pins lock the shroud to the full cage, it prevents movement.)
 
 # My Equipment
 - Prusa MK3
@@ -73,3 +99,13 @@ Use the settings describe above if using OutwardB's custom fan grill cover gener
 Then in OpenSCAD, select "fan_shroud" as the part, grill style of custom.
 You will then see the customized fan shroud.
 Render it and export the STL.
+
+# Final Note
+The current pictures are of an early iteration that used hinges for the fan shroud/cage instead of the pins.
+The fan shroud was painted black to match the case.
+All of the testing of the design worked fine until it was put into the case for actual use.
+The fan shroud does not open far enough to access the drives.
+With the fan shroud attached, the front of the case cannot be removed.
+See the makes for pictures of the new design and I will update my photos when I reprint the case in the future.
+The latest iteration is much better than the photos.
+
