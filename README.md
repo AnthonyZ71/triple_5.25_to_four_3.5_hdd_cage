@@ -12,6 +12,7 @@ You need to print:
 
 Note:  Monitor the print closely when printing the fan mounting pins.
 They are very small and can detach from the bed fairly easily.
+If you continue to have problems, perhaps print the pins on a raft.
 
 Pictures are of the cage-fan_shroud_web.stl
 
