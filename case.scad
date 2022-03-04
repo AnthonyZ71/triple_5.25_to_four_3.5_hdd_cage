@@ -1,7 +1,8 @@
 
 use <snap-pins.scad>;
 
-PART = "test"; // ["cage", "rail", "fan_shroud", "fan_mounting_pin", "test"]
+SBC = "rockpro64";
+PART = "tower"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -58,6 +59,7 @@ hdd_l = hdd_a2 + tolerance;
 cage_h = 125.75 + 0;
 cage_w = 145 + 0; // 146;
 cage_l = hdd_a2 - hdd_a7 + 20; //cd_a10 + cd_a11 + 10;
+
 total_rail_height = 8 + 0;
 
 echo("old", cd_a10 + cd_a11 + 10);
@@ -82,6 +84,20 @@ snap_pin_snapDepth = 1.2;
 snap_pin_thickness = 1.0;
 
 $fn=$preview ? 18 : 120;
+
+// SBC cavity settings
+sbc_none      = [[0, 0, 0]];
+sbc_rockpro64 = [
+    [79.5, 127, 20]
+];
+sbc =
+    SBC=="rockpro64" ? sbc_rockpro64 :
+    sbc_none
+    ;
+
+tower_h = max(cage_h, sbc[0][1] + (spacing_w + tolerance) * 2);
+tower_w = cage_w + 85;
+tower_l = cage_l;
 
 module vertical_hdd(l = hdd_l) {
     translate([hdd_h, 0, 0]) {
@@ -123,11 +139,11 @@ module rail_spacing() {
             cube([rail, cage_l*2, rail], center=true);
 }
 
-module fan_mounting_sockets() {
-    center_w = cage_w/2;
-    center_h = cage_h/2;
-    corner_w = cage_w/2 - 4;
-    corner_h = cage_h/2 - 8;
+module fan_mounting_sockets(w = cage_w, h = cage_h) {
+    center_w = w/2;
+    center_h = h/2;
+    corner_w = w/2 - 4;
+    corner_h = h/2 - 8;
     snap_pin_radius = snap_pin_diameter / 2;
     cylinder_r = snap_pin_radius + snap_pin_snap + snap_pin_cylinder_thickness;
     cylnder_h = snap_pin_length + snap_pin_cylinder_thickness;
@@ -148,6 +164,73 @@ module fan_mounting_sockets() {
                                 printable = false,
                                 cylinderRadius = cylinder_r,
                                 cylinderHeight = cylnder_h);
+        }
+    }
+}
+
+module tower() {
+    cut = 7;
+    cage_x = tower_w - cage_w;
+    cage_z = (tower_h - cage_h) / 2;
+
+    difference() {
+        cube([tower_w, tower_l, tower_h]);
+        
+        // cut off harsh corners
+        translate([0, cut, 0])
+            rotate([0, 45, 0])
+                cube([cut, tower_l*2, cut], center=true);
+        translate([tower_w, cut, 0])
+            rotate([0, 45, 0])
+                cube([cut, tower_l*2, cut], center=true);
+        translate([0, cut, tower_h])
+            rotate([0, 45, 0])
+                cube([cut, tower_l*2, cut], center=true);
+        translate([tower_w, cut, tower_h])
+            rotate([0, 45, 0])
+                cube([cut, tower_w*2, cut], center=true);
+        
+        // cut out socket for mounting pin for fan
+        if (include_fan_mount) {
+            fan_mounting_sockets(tower_w, tower_h);
+        }
+        
+        ///////////////////////
+        // SECTION: SBC mount
+        ///////////////////////
+ 
+        // cut out center cavity
+        translate([cage_x/2 + spacing_w, tower_l/2, tower_h/2])
+            cube([cage_x - spacing_w * 2, tower_l * 2, tower_h - spacing_w * 2], center=true);
+       
+        
+        ///////////////////////
+        // SECTION: Drive cage
+        ///////////////////////
+        translate([cage_x, 0, cage_z]) {
+
+            // cut out center cavity
+            translate([cage_w/2, cage_l/2, cage_h/2])
+                cube([hdd_h * 4 + spacing_w*7, cage_l * 2, hdd_w], center=true);
+            
+            // cut out the hdd vertical spacing
+            translate([spacing_w, 0, 0])
+                caged_hdds();
+            
+            // cut out routing for fan power cable.
+            center_w = cage_w/2;
+            center_h = cage_h/2;
+            corner_w = (cage_w - spacing_w*4)/2 - 1;
+            corner_h = hdd_w/2 - 1;
+            for(w = [-1 : 2 : -1]) {
+                x = center_w + corner_w * w;
+                for(h = [-1 : 2 : 1]) {
+                    z = center_h + corner_h * h;
+                    translate([x, cage_l/2, z])
+                        rotate([90, 0, 0])
+                            cylinder(cage_l + 2, r=3, center=true);
+                }
+            }
         }
     }
 }
@@ -465,6 +548,10 @@ if (PART == "cage") {
     translate([0, 0, cage_l])
         rotate([-90, 0, 0])
             cage();
+} else if (PART == "tower") {
+    translate([0, 0, tower_l])
+        rotate([-90, 0, 0])
+            tower();
 } else if (PART == "rail") {
     translate([0, 0, total_rail_height*3/4])
         rotate([0, 90, 0])
