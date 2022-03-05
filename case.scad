@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "sbc_mount"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -92,12 +92,12 @@ $fn=$preview ? 18 : 120;
 // SBC cavity settings
 sbc_none      = [[0, 0, 0]];
 sbc_rockpro64 = [
-    [79.5, 127, 20],   // x, y (side w/ no ports), z (clearance),
+    [80, 128, 20],   // x, y (side w/ no ports), z (clearance),
     [ // stand-off locations
         [4.5,         4.5], 
-        [79.5 - 4.5,  4.5],
-        [4.5,         127  - 4.5],
-        [79.5 - 4.5,  127  - 4.5]
+        [80 - 4.5,  4.5],
+        [4.5,         128  - 4.5],
+        [80 - 4.5,  128  - 4.5]
     ]  
 ];
 sbc =
