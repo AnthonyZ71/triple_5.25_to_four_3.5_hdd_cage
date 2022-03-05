@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "tower"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "test"]
+PART = "sbc_mount"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -62,6 +62,10 @@ cage_l = hdd_a2 - hdd_a7 + 20; //cd_a10 + cd_a11 + 10;
 
 total_rail_height = 8 + 0;
 
+pin_d = 2.7 - tolerance; //.1140 * 25.4;
+main_rail_offset = hdd_a2 - hdd_a8 - hdd_a9 - pin_d/2;
+main_rail_length = 4 * 25.4;
+
 echo("old", cd_a10 + cd_a11 + 10);
 echo("new", hdd_a2 - hdd_a7 + 20);
 
@@ -88,14 +92,14 @@ $fn=$preview ? 18 : 120;
 // SBC cavity settings
 sbc_none      = [[0, 0, 0]];
 sbc_rockpro64 = [
-    [79.5, 127, 20]
+    [79.5, 127, 20]   // x, y (side w/ no ports), z (clearance)
 ];
 sbc =
     SBC=="rockpro64" ? sbc_rockpro64 :
     sbc_none
     ;
 
-tower_h = max(cage_h, sbc[0][1] + (spacing_w + tolerance) * 2);
+tower_h = max(cage_h, sbc[0][0] + (spacing_w + tolerance) * 2);
 tower_w = cage_w + 85;
 tower_l = cage_l;
 
@@ -166,6 +170,34 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
                                 cylinderHeight = cylnder_h);
         }
     }
+}
+
+module sbc_mount() {
+    plate_w = sbc[0][0];
+    plate_l = sbc[0][1];
+    plate_h = spacing_w;
+    
+    base_y = main_rail_offset + max(0, (main_rail_length - plate_l) / 2);
+    
+    // Base plate and SBC plate
+    translate([0, base_y, 0]) {
+        cube([tower_h, main_rail_length, plate_h]);
+        
+        // SBC plate
+        translate([(tower_h - plate_w) / 2, 0, 0]) {
+            cube([plate_w, plate_l, plate_h]);
+            
+            // TODO: stand-offs go here
+        }
+    }
+    
+    // Rails to connect to tower
+    translate([0, 0, total_rail_height*3/4])
+        rotate([0, 90, 0])
+            rail(with_pin = false);
+    translate([tower_h, 0, total_rail_height*3/4])
+        rotate([0, -90, 0])
+            rail(with_pin = false);
 }
 
 module tower() {
@@ -384,9 +416,8 @@ module handle(length, width, height, rail_height, positive=true) {
     }
 }
 
-module rail(positive=true) {
+module rail(positive=true, with_pin=true) {
     pin_len = 6;
-    pin_d = 2.7 - tolerance; //.1140 * 25.4;
     t = (positive) ? 0 : tolerance * 2;
     top_width = (pin_d > 3) ? pin_d + t: 3 + t;
     top_height=total_rail_height / 3 + t;
@@ -396,10 +427,7 @@ module rail(positive=true) {
     top_y = (top_height + bottom_height)/2;
     mid_y = top_y - top_height;
     bottom_y = -top_y;
-    
-    main_length = 4 * 25.4;
-    main_rail_offset = hdd_a2 - hdd_a8 - hdd_a9 - pin_d/2;
-
+        
     //  A_|_B
     //C /   \D
     //E|_____|F
@@ -416,17 +444,17 @@ module rail(positive=true) {
     echo("main_rail_offset = ", main_rail_offset);
     translate([0, main_rail_offset, -bottom_y]) {
         rotate([90, 0, 180]) 
-            linear_extrude(main_length + pin_d)
+            linear_extrude(main_rail_length + pin_d)
                 polygon(points, faces);
     }
-    if (positive) {
+    if (positive && with_pin) {
         translate([0, main_rail_offset, total_height + pin_len/2-0.01]) {
-        translate([0, pin_d/2, 0])
-            rotate([0, -90, 0])
-                pin(pin_d, pin_len);
-        translate([0, main_length + pin_d/2, 0])
-            rotate([0, -90, 0])
-                pin(pin_d, pin_len);
+            translate([0, pin_d/2, 0])
+                rotate([0, -90, 0])
+                    pin(pin_d, pin_len);
+            translate([0, main_rail_length + pin_d/2, 0])
+                rotate([0, -90, 0])
+                    pin(pin_d, pin_len);
         }
     }
     handle(main_rail_offset, bottom_width, 1.5, total_height, positive);
@@ -556,6 +584,8 @@ if (PART == "cage") {
     translate([0, 0, total_rail_height*3/4])
         rotate([0, 90, 0])
             rail();
+} else if (PART == "sbc_mount") {
+    sbc_mount();
 } else if (PART == "fan_shroud") {
     fan_shroud();
 } else if (PART == "fan_mounting_pin") {
