@@ -183,29 +183,32 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
 }
 
 module sbc_mount() {
+    bridge_w = hdd_w - tolerance;
+    bridge_l = spacing_w * 7;
+    bridge_y = main_rail_offset + main_rail_length - (bridge_l + spacing_w *2);
+    
     plate_w = sbc[0][0];
     plate_l = sbc[0][1];
     plate_h = 2;
+
     
-    base_y = main_rail_offset + max(0, (main_rail_length - plate_l) / 2);
-    
-    // Base plate and SBC plate
-    translate([0, base_y, 0]) {
-        cube([tower_h, main_rail_length, plate_h]);
+    // Bridge plate
+    translate([0, bridge_y, 0]) {
+        cube([bridge_w, bridge_l, plate_h]);
+    }
         
-        // SBC plate
-        translate([(tower_h - plate_w) / 2, 0, 0]) {
-            cube([plate_w, plate_l, plate_h]);
-            
-            // SBC stand-offs go here
-            for (standoff = sbc[1]) {
-                translate([standoff[0], standoff[1], (standoff_h + plate_h) / 2]) {
-                    difference() {
-                        cylinder(h = standoff_h + plate_h, d = standoff_d, center = true);
-                        
-                        translate([0, 0, plate_h])
-                            cylinder(h = standoff_h + plate_h, d = standoff_hole_d, center = true);
-                    }
+    // SBC plate
+    translate([(bridge_w - plate_w) / 2, 0, 0]) {
+        cube([plate_w, plate_l, plate_h]);
+        
+        // SBC stand-offs go here
+        for (standoff = sbc[1]) {
+            translate([standoff[0], standoff[1], (standoff_h + plate_h) / 2]) {
+                difference() {
+                    cylinder(h = standoff_h + plate_h, d = standoff_d, center = true);
+                    
+                    translate([0, 0, plate_h])
+                        cylinder(h = standoff_h + plate_h, d = standoff_hole_d, center = true);
                 }
             }
         }
@@ -215,7 +218,7 @@ module sbc_mount() {
     translate([0, 0, total_rail_height*3/4 + 0.15])
         rotate([0, 90, 0])
             rail(with_pin = false);
-    translate([tower_h, 0, total_rail_height*3/4 + 0.15])
+    translate([bridge_w, 0, total_rail_height*3/4 + 0.15])
         rotate([0, -90, 0])
             rail(with_pin = false);
 }
@@ -250,11 +253,19 @@ module tower() {
         ///////////////////////
         // SECTION: SBC mount
         ///////////////////////
- 
-        // cut out center cavity
+
+        // cut out center cavity 
         translate([cage_x/2 + spacing_w, tower_l/2, tower_h/2])
-            cube([cage_x - spacing_w * 2, tower_l * 2, tower_h - spacing_w * 2], center=true);
-       
+            cube([cage_x - spacing_w * 2, tower_l * 2, hdd_w], center=true);
+        
+        // cut out sbc mount area
+        translate([cage_x - spacing_w, -1, (cage_h - hdd_w) / 2]) {
+            translate([-hdd_h, 0, 0])
+                vertical_hdd(hdd_l + 2);
+            
+            translate([-spacing_w, 0, -spacing_w])
+                cube([spacing_w, main_rail_offset + main_rail_length, hdd_w + spacing_w * 2]);
+        }
         
         ///////////////////////
         // SECTION: Drive cage
