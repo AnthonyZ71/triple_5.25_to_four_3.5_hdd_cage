@@ -92,12 +92,22 @@ $fn=$preview ? 18 : 120;
 // SBC cavity settings
 sbc_none      = [[0, 0, 0]];
 sbc_rockpro64 = [
-    [79.5, 127, 20]   // x, y (side w/ no ports), z (clearance)
+    [79.5, 127, 20],   // x, y (side w/ no ports), z (clearance),
+    [ // stand-off locations
+        [4.5,         4.5], 
+        [79.5 - 4.5,  4.5],
+        [4.5,         127  - 4.5],
+        [79.5 - 4.5,  127  - 4.5]
+    ]  
 ];
 sbc =
     SBC=="rockpro64" ? sbc_rockpro64 :
     sbc_none
     ;
+
+standoff_h = 6;
+standoff_d = 9;
+standoff_hole_d = 5.45 - tolerance;
 
 tower_h = max(cage_h, sbc[0][0] + (spacing_w + tolerance) * 2);
 tower_w = cage_w + 85;
@@ -175,7 +185,7 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
 module sbc_mount() {
     plate_w = sbc[0][0];
     plate_l = sbc[0][1];
-    plate_h = spacing_w;
+    plate_h = 2;
     
     base_y = main_rail_offset + max(0, (main_rail_length - plate_l) / 2);
     
@@ -187,15 +197,25 @@ module sbc_mount() {
         translate([(tower_h - plate_w) / 2, 0, 0]) {
             cube([plate_w, plate_l, plate_h]);
             
-            // TODO: stand-offs go here
+            // SBC stand-offs go here
+            for (standoff = sbc[1]) {
+                translate([standoff[0], standoff[1], (standoff_h + plate_h) / 2]) {
+                    difference() {
+                        cylinder(h = standoff_h + plate_h, d = standoff_d, center = true);
+                        
+                        translate([0, 0, plate_h])
+                            cylinder(h = standoff_h + plate_h, d = standoff_hole_d, center = true);
+                    }
+                }
+            }
         }
     }
     
     // Rails to connect to tower
-    translate([0, 0, total_rail_height*3/4])
+    translate([0, 0, total_rail_height*3/4 + 0.15])
         rotate([0, 90, 0])
             rail(with_pin = false);
-    translate([tower_h, 0, total_rail_height*3/4])
+    translate([tower_h, 0, total_rail_height*3/4 + 0.15])
         rotate([0, -90, 0])
             rail(with_pin = false);
 }
