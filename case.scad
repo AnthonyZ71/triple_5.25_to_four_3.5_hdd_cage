@@ -250,7 +250,7 @@ module tower() {
         
         // cut out socket for mounting pin for fan
         if (include_fan_mount) {
-            fan_mounting_sockets(tower_w, tower_h);
+            translate([cage_x, 0, 0]) fan_mounting_sockets(cage_w, tower_h);
         }
         
         ///////////////////////
