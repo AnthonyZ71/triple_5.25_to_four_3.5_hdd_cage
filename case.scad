@@ -15,7 +15,7 @@ shroud_h = 27;
 shroud_inset = 11;
 
 // How much tolerance to add to the prints.  This primarily impacts the rail channels, but also has some other impacts such as the pins on the rail that plug into the hard drive.
-tolerance = .2;
+tolerance = 0.2;
 
 bay_h = 41.3 + tolerance;
 bay_w = 146.1 + tolerance;
