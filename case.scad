@@ -2,14 +2,16 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "tower"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "fan_shroud"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
 include_fan_mount = true;
 
 fan_grill_cover_height = 2;
-shroud_h = 26;
+shroud_w = 120;
+shroud_l = 120;
+shroud_h = 27;
 shroud_inset = 11;
 
 // How much tolerance to add to the prints.  This primarily impacts the rail channels, but also has some other impacts such as the pins on the rail that plug into the hard drive.
@@ -502,9 +504,9 @@ module fan_shroud() {
     translate([0, 0, shroud_h/2]) {
         difference() {
             cube([cage_w, cage_h, shroud_h], center=true);
-            cube([119.99, 119.99, shroud_h + 10], center=true);
-            translate([0, 0, fan_grill_cover_height + 2])
-                cube([cage_w - outer_wall, 120, shroud_h], center=true);
+            cube([shroud_w - 0.001, shroud_l - 0.001, shroud_h + 10], center=true);
+            translate([0, 0, fan_grill_cover_height - tolerance + 0.001])
+                cube([cage_w - outer_wall, shroud_l + tolerance * 2, shroud_h], center=true);
             translate([-cage_w/2, -cage_h/2, shroud_h/2])
                 rotate([-90, 0, 0])
                     fan_mounting_sockets();
