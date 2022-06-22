@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "sbc_mount"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -90,7 +90,7 @@ snap_pin_thickness = 1.0;
 $fn=$preview ? 18 : 120;
 
 // SBC cavity settings
-sbc_none      = [[0, 0, 0]];
+sbc_none      = [[0, 0, 0], [], [ 85 ]];
 sbc_rockpro64 = [
     [80, 128, 20],   // x, y (side w/ no ports), z (clearance),
     [ // stand-off locations
@@ -98,7 +98,10 @@ sbc_rockpro64 = [
         [80 - 4.5,  4.5],
         [4.5,       128  - 4.5],
         [80 - 4.5,  128  - 4.5]
-    ]  
+    ],
+    [
+      85 // cavity height
+    ]
 ];
 sbc =
     SBC=="rockpro64" ? sbc_rockpro64 :
@@ -110,7 +113,7 @@ standoff_d = 9;
 standoff_hole_d = 5.45 - tolerance;
 
 tower_h = max(cage_h, sbc[0][0] + (spacing_w + tolerance) * 2);
-tower_w = cage_w + 85;
+tower_w = cage_w + sbc[2][0] + 4;
 tower_l = cage_l;
 
 module vertical_hdd(l = hdd_l) {
