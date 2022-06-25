@@ -661,12 +661,12 @@ module tower_face() {
 
             // cut off harsh corners
             cut=7;
-            translate([cage_w/2, tower_h/2, shroud_inset - 2])
+            translate([cage_w/2, tower_h/2, 0])
                 rotate([0, 0, 45])
-                    cube([cut, cut, shroud_h], center=true);
-            translate([cage_w/2, -tower_h/2, shroud_inset - 2])
+                    cube([cut, cut, height + 1], center=true);
+            translate([cage_w/2, -tower_h/2, 0])
                 rotate([0, 0, 45])
-                    cube([cut, cut, shroud_h], center=true);
+                    cube([cut, cut, height + 1], center=true);
         }
     }
 }
