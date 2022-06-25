@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "fan_shroud"; // ["tower", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower_face"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -608,6 +608,57 @@ module fan_shroud_grip() {
 
 }
 
+module tower_face() {
+    shroud_t = 4;
+    
+    lip_height       = 10;
+    lip_thickness    = 1.2;
+    lip_screw_hole_d = 3;
+    lip_screw_hole_z = 6;
+    lip_screw_hole_inset = 20;
+    lip_screws = [
+        [cage_w/2 - 20,  tower_h/2],
+        [cage_w/2 - 20, -tower_h/2],
+        [-cage_w/2 + 20,  tower_h/2],
+        [-cage_w/2 + 20, -tower_h/2]
+    ];    
+    
+    height = shroud_h + lip_height;
+    
+    outer_wall = tower_h - 110;
+
+    import(grill_style);
+    translate([0, 0, height/2]) {
+        difference() {
+            cube([cage_w, tower_h, height], center=true);
+            
+            // lip around the sides.
+            translate([0, 0, shroud_h / 2])
+                cube([cage_w + 1, tower_h - lip_thickness * 2, lip_height + 1], center=true);
+            
+            // holes for screws
+            for (screw = lip_screws)
+                translate([screw[0], screw[1], height/2 - lip_height + lip_screw_hole_z])
+                    rotate([90, 0, 0])
+                        cylinder(h = lip_thickness * 4, d = lip_screw_hole_d, center = true);
+            
+            // cavity for fan
+            cube([shroud_w - 0.001, shroud_l + tolerance * 2 - 0.001, height + 10], center=true);
+            translate([0, 0, fan_grill_cover_height - tolerance + 0.001])
+                cube([cage_w - outer_wall, shroud_l + tolerance * 2, shroud_h], center=true);
+
+            // cut off harsh corners
+            cut=7;
+            translate([cage_w/2, tower_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+            translate([cage_w/2, -tower_h/2, shroud_inset - 2])
+                rotate([0, 0, 45])
+                    cube([cut, cut, shroud_h], center=true);
+        }
+    }
+}
+
 if (PART == "cage") {
     translate([0, 0, cage_l])
         rotate([-90, 0, 0])
@@ -624,6 +675,8 @@ if (PART == "cage") {
     sbc_mount();
 } else if (PART == "fan_shroud") {
     fan_shroud();
+} else if (PART == "tower_face") {
+    tower_face();
 } else if (PART == "fan_mounting_pin") {
     fan_mounting_pin();
 } else if (PART == "test") {
