@@ -300,7 +300,7 @@ module tower() {
                 // holes for heat-set inserts
                 rotate([90, 0, 0])
                     for (screw = lip_screws)
-                        translate([screw[0], screw[1], cage_h/2 - lip_height + lip_screw_hole_z])
+                        translate([screw[0], screw[1], tower_h / 2 - lip_screw_hole_z - tolerance])
                             rotate([90, 0, 0])
                                 cylinder(h = standoff_h * 2, d = standoff_hole_d, center = true);
             }
@@ -646,7 +646,7 @@ module tower_face() {
             
             // lip around the sides.
             translate([0, 0, shroud_h / 2])
-                cube([cage_w + 1, tower_h - lip_thickness * 2, lip_height + 1], center=true);
+                cube([cage_w + 0.001, tower_h - lip_thickness * 2, lip_height + tolerance + 0.001], center=true);
             
             // holes for screws
             for (screw = lip_screws)
@@ -738,8 +738,8 @@ if (PART == "cage") {
 } else {
     translate([20, 0, 0])
         tower();
-    
-    translate([cage_w/2 + tower_w - cage_w + 20, -4*2 - 20, cage_h/2])
+
+    translate([cage_w/2 + tower_w - cage_w + 20, -7 - 20, cage_h/2])
         rotate([-90, 0, 0])
             tower_face();
     
