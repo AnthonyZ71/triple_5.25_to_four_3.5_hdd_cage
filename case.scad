@@ -655,11 +655,9 @@ module tower_face() {
                         cylinder(h = lip_thickness * 4, d = lip_screw_hole_d, center = true);
             
             // cavity for fan
-            
             cube([shroud_w - 0.001, shroud_l - 0.001, height + 10], center=true);
-            
             translate([0, 0, fan_grill_cover_height - tolerance + 0.001])
-                cube([cage_w - outer_wall, shroud_l , shroud_h], center=true);
+                cube([cage_w - outer_wall, shroud_l, height], center=true);
 
             // cut off harsh corners
             cut=7;
