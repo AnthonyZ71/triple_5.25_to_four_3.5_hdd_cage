@@ -118,7 +118,7 @@ tower_h = max(cage_h, sbc[0][0] + (spacing_w + tolerance) * 2);
 tower_w = cage_w + sbc[2][0] + 4;
 tower_l = cage_l;
 
-lip_height       = 10;
+lip_height       = 12;
 lip_thickness    = 1.2;
 lip_screw_hole_d = 3;
 lip_screw_hole_z = 5;
@@ -245,6 +245,7 @@ module tower() {
     cage_x = tower_w - cage_w;
     cage_z = (tower_h - cage_h) / 2;
 
+!
     difference() {
         cube([tower_w, tower_l, tower_h]);
         
@@ -261,11 +262,6 @@ module tower() {
         translate([tower_w, cut, tower_h])
             rotate([0, 45, 0])
                 cube([cut, tower_w*2, cut], center=true);
-        
-        // cut out socket for mounting pin for fan
-        if (include_fan_mount) {
-            translate([cage_x, 0, 0]) fan_mounting_sockets(cage_w, tower_h);
-        }
         
         ///////////////////////
         // SECTION: SBC mount
@@ -289,9 +285,18 @@ module tower() {
         ///////////////////////
         translate([cage_x, 0, cage_z]) {
 
-            // cut out center cavity
+            // cut outs relative to the center of the cage
             translate([cage_w/2, cage_l/2, cage_h/2]) {
+                // center cavity
                 cube([hdd_h * 4 + spacing_w*7, cage_l * 2, hdd_w], center=true);
+                
+                // lip around the sides.
+                for (lip = [1, -1]) {
+                    h = lip_height + tolerance;
+                    t = lip_thickness + tolerance;
+                    translate([0, (h - tower_l) / 2, lip * (tower_h - t) / 2])
+                        cube([cage_w + tolerance * 2, h + 0.001, t + 0.001], center=true);
+                }
             
                 // holes for heat-set inserts
                 rotate([90, 0, 0])
