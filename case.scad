@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "x"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower_face"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -646,7 +646,7 @@ module tower_face() {
             
             // lip around the sides.
             translate([0, 0, shroud_h / 2])
-                cube([cage_w + 0.001, tower_h - lip_thickness * 2, lip_height + tolerance + 0.001], center=true);
+                cube([cage_w + 1, tower_h - lip_thickness * 2, lip_height + tolerance + 0.001], center=true);
             
             // holes for screws
             for (screw = lip_screws)
@@ -655,9 +655,11 @@ module tower_face() {
                         cylinder(h = lip_thickness * 4, d = lip_screw_hole_d, center = true);
             
             // cavity for fan
-            cube([shroud_w - 0.001, shroud_l + tolerance * 2 - 0.001, height + 10], center=true);
+            
+            cube([shroud_w - 0.001, shroud_l - 0.001, height + 10], center=true);
+            
             translate([0, 0, fan_grill_cover_height - tolerance + 0.001])
-                cube([cage_w - outer_wall, shroud_l + tolerance * 2, shroud_h], center=true);
+                cube([cage_w - outer_wall, shroud_l , shroud_h], center=true);
 
             // cut off harsh corners
             cut=7;
