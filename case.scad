@@ -248,7 +248,7 @@ module tower() {
     cut = 7;
     cage_x = tower_w - cage_w;
     cage_z = (tower_h - cage_h) / 2;
-!
+
     difference() {
         cube([tower_w, tower_l, tower_h]);
         
@@ -298,7 +298,7 @@ module tower() {
                     h = lip_height + tolerance;
                     t = lip_thickness + tolerance;
                     translate([0, (h - tower_l) / 2, lip * (tower_h - t) / 2])
-                        cube([cage_w + tolerance * 2, h + 0.001, t + 0.001], center=true);
+                        cube([cage_w + tolerance * 2, h + 0.001, t + 0.004], center=true);
                 }
             
                 // holes for heat-set inserts
