@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "tower_face"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -91,6 +91,10 @@ snap_pin_thickness = 1.0;
 
 $fn=$preview ? 18 : 120;
 
+standoff_h = 6;
+standoff_d = 9;
+standoff_hole_d = 5.45 - tolerance;
+
 // SBC cavity settings
 sbc_none      = [[0, 0, 0], [], [ 85 ]];
 sbc_rockpro64 = [
@@ -102,20 +106,20 @@ sbc_rockpro64 = [
         [80 - 4.5,  128  - 4.5]
     ],
     [
-      85 // cavity height
+      63 // minimum cavity height
     ]
 ];
 sbc =
     SBC=="rockpro64" ? sbc_rockpro64 :
     sbc_none
     ;
+sbc_plate_h = 2;
+sbc_cavity_h = tolerance + spacing_w + sbc_plate_h + standoff_h + sbc[2][0] + tolerance;
 
-standoff_h = 6;
-standoff_d = 9;
-standoff_hole_d = 5.45 - tolerance;
+echo("sbc cavity height", sbc_cavity_h);
 
 tower_h = max(cage_h, sbc[0][0] + (spacing_w + tolerance) * 2);
-tower_w = cage_w + sbc[2][0] + 4;
+tower_w = cage_w + sbc_cavity_h + spacing_w;
 tower_l = cage_l;
 
 lip_height       = 12;
@@ -206,7 +210,7 @@ module sbc_mount() {
     
     plate_w = sbc[0][0];
     plate_l = sbc[0][1];
-    plate_h = 2;
+    plate_h = sbc_plate_h;
 
     
     // Bridge plate
@@ -244,7 +248,7 @@ module tower() {
     cut = 7;
     cage_x = tower_w - cage_w;
     cage_z = (tower_h - cage_h) / 2;
-
+!
     difference() {
         cube([tower_w, tower_l, tower_h]);
         
@@ -267,8 +271,8 @@ module tower() {
         ///////////////////////
 
         // cut out center cavity 
-        translate([cage_x/2 + spacing_w, tower_l/2, tower_h/2])
-            cube([cage_x - spacing_w * 2, tower_l * 2, hdd_w], center=true);
+        translate([cage_x/2 + spacing_w/2, tower_l/2, tower_h/2])
+            cube([cage_x - spacing_w, tower_l * 2, hdd_w], center=true);
         
         // cut out sbc mount area
         translate([cage_x - spacing_w, -1, (cage_h - hdd_w) / 2]) {
@@ -302,7 +306,7 @@ module tower() {
                     for (screw = lip_screws)
                         translate([screw[0], screw[1], tower_h / 2 - lip_screw_hole_z - tolerance])
                             rotate([90, 0, 0])
-                                cylinder(h = standoff_h * 2, d = standoff_hole_d, center = true);
+                                cylinder(h = (standoff_h + 0.5) * 2, d = standoff_hole_d, center = true);
             }
             
             // cut out the hdd vertical spacing
