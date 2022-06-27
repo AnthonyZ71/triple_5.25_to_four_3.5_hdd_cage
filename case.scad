@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "tower"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "sbc_mount"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -204,7 +204,7 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
 }
 
 module sbc_mount() {
-    bridge_w = (hdd_w - tolerance) + (total_rail_height + tolerance * 2) * 2;
+    bridge_w = hdd_w + total_rail_height * 2 - tolerance * 2;
     bridge_l = spacing_w * 7;
     bridge_y = main_rail_offset + main_rail_length - (bridge_l + spacing_w *2);
     
@@ -740,12 +740,19 @@ if (PART == "cage") {
         fan_mounting_pin();
     }
 } else {
-    translate([20, 0, 0])
-        tower();
+    translate([20, 0, tower_w + 20]) rotate([0, 90, 0]) {
+            
+        translate([20, 0, 0])
+            tower();
 
-    translate([cage_w/2 + tower_w - cage_w + 20, -7 - 20, cage_h/2])
-        rotate([-90, 0, 0])
-            tower_face();
+        translate([cage_w/2 + tower_w - cage_w + 20, -7 - 20, cage_h/2])
+            rotate([-90, 0, 0])
+                tower_face();
+        
+        translate([tower_w - cage_w + 20 - spacing_w, -20, 4 + tolerance])
+            rotate([0, -90, 0])
+                sbc_mount();
+    }
     
     translate([0, 0, 30])
         handle(15.525, 15, 1.5, total_rail_height, true);
@@ -759,5 +766,4 @@ if (PART == "cage") {
     translate([-20, 0, hdd_a5 + (.1380 * 25.4)/2])
         rotate([0, 90, 0])
             rail(false);
-
 }
