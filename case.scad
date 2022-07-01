@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "sbc_mount"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower_face"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -11,7 +11,7 @@ include_fan_mount = true;
 fan_grill_cover_height = 2;
 shroud_w = 120;
 shroud_l = 120;
-shroud_h = 27;
+shroud_h = 29;
 shroud_inset = 11;
 
 // How much tolerance to add to the prints.  This primarily impacts the rail channels, but also has some other impacts such as the pins on the rail that plug into the hard drive.
@@ -204,7 +204,7 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
 }
 
 module sbc_mount() {
-    bridge_w = hdd_w + total_rail_height * 2 - tolerance * 2;
+    bridge_w = hdd_w + total_rail_height * 2;
     bridge_l = spacing_w * 7;
     bridge_y = main_rail_offset + main_rail_length - (bridge_l + spacing_w *2);
     
