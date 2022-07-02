@@ -214,7 +214,7 @@ module sbc_mount() {
     
     // Bridge plate
     for (bridge_y = [main_rail_offset + main_rail_length - (bridge_l + spacing_w *2),
-                     spacing_w * 6.5]) {       
+                     spacing_w * 6.75]) {       
         translate([0, bridge_y, 0]) {
             cube([bridge_w, bridge_l, plate_h]);
         }
