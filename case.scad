@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "tower_face"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "sbc_mount"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -206,7 +206,6 @@ module fan_mounting_sockets(w = cage_w, h = cage_h) {
 module sbc_mount() {
     bridge_w = hdd_w + total_rail_height * 2;
     bridge_l = spacing_w * 7;
-    bridge_y = main_rail_offset + main_rail_length - (bridge_l + spacing_w *2);
     
     plate_w = sbc[0][0];
     plate_l = sbc[0][1];
@@ -214,8 +213,11 @@ module sbc_mount() {
 
     
     // Bridge plate
-    translate([0, bridge_y, 0]) {
-        cube([bridge_w, bridge_l, plate_h]);
+    for (bridge_y = [main_rail_offset + main_rail_length - (bridge_l + spacing_w *2),
+                     spacing_w * 6.5]) {       
+        translate([0, bridge_y, 0]) {
+            cube([bridge_w, bridge_l, plate_h]);
+        }
     }
         
     // SBC plate
