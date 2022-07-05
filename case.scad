@@ -2,7 +2,7 @@
 use <snap-pins.scad>;
 
 SBC = "rockpro64";
-PART = "sbc_mount"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
+PART = "tower"; // ["tower", "tower_face", "cage", "rail", "fan_shroud", "fan_mounting_pin", "sbc_mount", "test"]
 // Select the grill style for the fan shroud.  Use custom and replace the fan_cover_custom.stl with your custom grill (see README.md for more details.)  Select none for an empty hole with an externally mounted grill cover.
 grill_style = "fan_cover_web.stl"; // [fan_cover_crosshair.stl:crosshair,fan_cover_crosshex.stl:crosshex,fan_cover_grid.stl:grid,fan_cover_teardrop.stl:teardrop,fan_cover_web.stl:web,fan_cover_custom.stl:custom,fan_cover_none.stl:none]
 
@@ -114,7 +114,7 @@ sbc =
     sbc_none
     ;
 sbc_plate_h = 2;
-sbc_cavity_h = tolerance + spacing_w + sbc_plate_h + standoff_h + sbc[2][0] + tolerance;
+sbc_cavity_h = tolerance + sbc_plate_h + standoff_h + sbc[2][0] + tolerance;
 
 echo("sbc cavity height", sbc_cavity_h);
 
@@ -277,7 +277,7 @@ module tower() {
             cube([cage_x - spacing_w, tower_l * 2, hdd_w], center=true);
         
         // cut out sbc mount area
-        translate([cage_x - spacing_w, -1, (cage_h - hdd_w) / 2]) {
+        translate([cage_x, -1, (cage_h - hdd_w) / 2]) {
             translate([-hdd_h, 0, 0])
                 vertical_hdd(hdd_l + 2);
             
@@ -297,8 +297,8 @@ module tower() {
                 
                 // lip around the sides.
                 for (lip = [1, -1]) {
-                    h = lip_height + tolerance;
-                    t = lip_thickness + tolerance;
+                    h = lip_height + tolerance/2;
+                    t = lip_thickness + tolerance/2;
                     translate([0, (h - tower_l) / 2, lip * (tower_h - t) / 2])
                         cube([cage_w + tolerance * 2, h + 0.001, t + 0.004], center=true);
                 }
@@ -747,11 +747,11 @@ if (PART == "cage") {
         translate([20, 0, 0])
             tower();
 
-        translate([cage_w/2 + tower_w - cage_w + 20, -7 - 20, cage_h/2])
+        translate([cage_w/2 + tower_w - cage_w + 20, -shroud_h, cage_h/2])
             rotate([-90, 0, 0])
                 tower_face();
         
-        translate([tower_w - cage_w + 20 - spacing_w, -20, 4 + tolerance])
+        translate([tower_w - cage_w + 20, -20, 4 + tolerance])
             rotate([0, -90, 0])
                 sbc_mount();
     }
